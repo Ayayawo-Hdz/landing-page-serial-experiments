@@ -59,7 +59,7 @@ Route::post('/login', function (Request $request) {
         $request->password === $credenciales['password']
     ) {
         session(['autenticado' => true]);
-        return redirect('/tienda');
+        return redirect('/');
     }
 
     return back()->withErrors([

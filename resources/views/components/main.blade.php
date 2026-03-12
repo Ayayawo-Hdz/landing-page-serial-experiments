@@ -50,12 +50,21 @@ new class extends Component
         </p>
 
         <div class="flex items-center gap-4 mt-2">
-            <a href="/login">
-                <button class="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-cyan-500/20">
-                    <x-icon name="o-user" class="w-5 h-5" />
-                    Iniciar sesión
-                </button>
-            </a>
+            @if(session('autenticado'))
+                <a href="/tienda">
+                    <button hover="pointer" class="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-cyan-500/20">
+                        <x-icon name="o-shopping-cart" class="w-5 h-5" />
+                        Ir a la tienda
+                    </button>
+                </a>
+            @else
+                <a href="/login">
+                    <button hover="pointer" class="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-cyan-500/20">
+                        <x-icon name="o-user" class="w-5 h-5" />
+                        Iniciar sesión
+                    </button>
+                </a>
+            @endif
             <a href="#sobre-nosotros" class="text-sm text-gray-500 hover:text-cyan-400 transition-colors font-medium">
                 Conoce más →
             </a>
