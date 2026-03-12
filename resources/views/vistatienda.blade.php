@@ -1,87 +1,103 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Mi tienda</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-
-<body class="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
-
-<div class="w-[1000px] p-8 bg-slate-800 rounded-xl shadow-xl text-white">
-
-    <!-- Barra superior -->
-    <div class="flex justify-between mb-6">
-
-        <a href="/carrito"
-           class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded">
-           Ver carrito
-        </a>
-
-        <a href="/"
-           class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded">
-           Logout
-        </a>
-
-    </div>
-
-    <div class="flex justify-center mb-6">
-        <img src="/logo.png" class="w-24">
-    </div>
-
-    <h1 class="text-2xl font-bold text-center mb-8">
-        Bienvenido a la tienda
-    </h1>
+@push('styles')
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap" rel="stylesheet">
+    <style>
+        body, .navbar, nav, [class*="nav"] {
+            font-family: 'Fira Code', monospace !important;
+        }
+        [x-cloak] { display: none !important; }
+    </style>
+@endpush
 
 
-    <!-- CATEGORIAS -->
-    @foreach($categorias as $categoria)
 
-        <h2 class="text-xl font-bold mt-8 mb-4 text-cyan-400">
-            {{ $categoria->name }}
-        </h2>
+<x-layouts.app title="Registro">
 
-        <div class="grid grid-cols-3 gap-6">
+        <div class="text-center my-8">
+            <h1 class="text-4xl font-bold text-cyan-500 mb-4">
+                Tienda de Tecnología Serial Experiments
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300">
+                Explora nuestra selección de productos tecnológicos diseñados para ofrecer eficiencia y accesibilidad a precios bajos.
+            </p>
+        </div>
 
-            @foreach($categoria->products as $producto)
+        <div x-data="{ tabActiva: '{{ $categorias->first()->name }}' }">
 
-            <div class="bg-slate-700 p-4 rounded-lg text-center">
-
-                <img src="https://via.placeholder.com/150" class="mx-auto mb-3 rounded">
-
-                <h2 class="font-bold">
-                    {{ $producto->name }}
-                </h2>
-
-                <p class="text-slate-300 text-sm mb-2">
-                    {{ $producto->description }}
-                </p>
-
-                <p class="text-cyan-400 mb-3">
-                    ${{ $producto->price }}
-                </p>
-
-                <form action="/agregar-carrito" method="POST">
-                    @csrf
-
-                    <input type="hidden" name="nombre" value="{{ $producto->name }}">
-                    <input type="hidden" name="precio" value="{{ $producto->price }}">
-
-                    <x-mary-button class="bg-cyan-600 hover:bg-cyan-500 text-white w-full">
-                        Comprar
-                    </x-mary-button>
-
-                </form>
-
+            <div class="flex gap-2 border-b border-base-300 mb-6 justify-center">
+                @foreach($categorias as $categoria)
+                    <button
+                        @click="tabActiva = '{{ $categoria->name }}'"
+                        :class="tabActiva === '{{ $categoria->name }}'
+                            ? 'border-b-2 border-cyan-500 text-cyan-500 font-bold'
+                            : 'text-gray-500 hover:text-cyan-400'"
+                        class="px-4 py-2 transition-colors">
+                        {{ $categoria->name }}
+                    </button>
+                @endforeach
             </div>
 
+            @foreach($categorias as $categoria)
+                <div x-show="tabActiva === '{{ $categoria->name }}'" x-cloak>
+                    <div class="grid grid-cols-2 gap-6">
+
+                        @foreach($categoria->products as $producto)
+                        <div class="relative flex flex-col rounded-2xl bg-base-200 border border-base-300 hover:border-cyan-500/50 shadow-md hover:shadow-cyan-500/10 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+
+                            <div class="h-1 w-full bg-gradient-to-r from-cyan-500 to-cyan-700"></div>
+
+                            <div class="flex flex-col flex-1 p-6 gap-4">
+
+                                <div class="flex items-center gap-4">
+                                    <div class="flex-shrink-0 bg-cyan-500/10 rounded-xl p-3">
+                                        @if($categoria->name === 'Componentes')
+                                            <x-icon name="o-cpu-chip" class="w-7 h-7 text-cyan-400" />
+                                        @elseif($categoria->name === 'Licencias')
+                                            <x-icon name="o-computer-desktop" class="w-7 h-7 text-cyan-400" />
+                                        @else
+                                            <x-icon name="o-cube" class="w-7 h-7 text-cyan-400" />
+                                        @endif
+                                    </div>
+                                    <div class="text-left">
+                                        <p class="font-bold text-lg leading-tight text-base-content">{{ $producto->name }}</p>
+                                        <span class="text-xs text-cyan-500 font-medium tracking-wide uppercase">{{ $categoria->name }}</span>
+                                    </div>
+                                </div>
+
+                                <p class="text-sm text-gray-500 dark:text-gray-400 text-left leading-relaxed flex-1">
+                                    {{ $producto->description }}
+                                </p>
+
+                                <div class="border-t border-base-300"></div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="text-2xl font-extrabold text-cyan-400">${{ number_format($producto->price, 2) }}</span>
+                                    <span class="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-400 font-medium">
+                                        Stock: {{ $producto->stock }}
+                                    </span>
+                                </div>
+
+                                <form action="/agregar-carrito" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="nombre" value="{{ $producto->name }}">
+                                    <input type="hidden" name="precio" value="{{ $producto->price }}">
+                                    <input type="hidden" name="categoria_nombre" value="{{ $categoria->name }}">
+                                    <button type="submit"
+                                        class="w-full flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white font-semibold py-2.5 rounded-xl transition-all duration-200">
+                                        <x-icon name="o-shopping-cart" class="w-4 h-4" />
+                                        Agregar al carrito
+                                    </button>
+                                </form>
+
+                            </div>
+                        </div>
+                        @endforeach
+
+                    </div>
+                </div>
             @endforeach
 
         </div>
 
-    @endforeach
-
-
-</div>
-
-</body>
-</html>
+</x-layouts.app>

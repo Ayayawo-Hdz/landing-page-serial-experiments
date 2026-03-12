@@ -9,17 +9,11 @@ use App\Models\Product;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoriaController;
 
-//Route::view('/', 'welcome')->name('home');
-
-//Route::middleware(['auth', 'verified'])->group(function () {
-//    Route::view('dashboard', 'dashboard')->name('dashboard');
-//});
-
 require __DIR__.'/settings.php';
 
 
-Route::view('/', 'main')->name('main');
-Route::view('/register', 'auth.register');
+Route::view('/', 'components.main')->name('main');
+Route::view('/register', 'register');
 
 
 Route::post('/register', function (Request $request) {
@@ -40,7 +34,11 @@ Route::post('/register', function (Request $request) {
 
 });
 
-Route::get('/vistatienda', function () {
+Route::get('/tienda', function () {
+
+    if (!session('autenticado')) {
+        return redirect('/login')->withErrors(['email' => 'Debes iniciar sesión primero.']);
+    }
 
     $categorias = Categoria::with('products')->get();
 
@@ -50,10 +48,18 @@ Route::get('/vistatienda', function () {
 
 Route::post('/login', function (Request $request) {
 
-    $user = User::where('email', $request->email)->first();
+    // Cuenta hardcodeada para pruebas
+    $credenciales = [
+        'email'    => 'admin@serial.com',
+        'password' => 'serial123',
+    ];
 
-    if ($user && Hash::check($request->password, $user->password)) {
-        return redirect('/vistatienda');
+    if (
+        $request->email === $credenciales['email'] &&
+        $request->password === $credenciales['password']
+    ) {
+        session(['autenticado' => true]);
+        return redirect('/tienda');
     }
 
     return back()->withErrors([
@@ -64,6 +70,7 @@ Route::post('/login', function (Request $request) {
 Route::post('/agregar-carrito', function(Request $request){
 
     $producto = [
+        "categoria" => $request->categoria_nombre,
         "nombre" => $request->nombre,
         "precio" => $request->precio
     ];
@@ -74,12 +81,21 @@ Route::post('/agregar-carrito', function(Request $request){
 
     session()->put('carrito', $carrito);
 
-    return redirect('/carrito');
+    return redirect('/tienda')->with('carrito_success', '"' . $request->nombre . '" fue añadido al carrito correctamente.');
 });
 
 Route::get('/carrito', function(){
+    if (!session('autenticado')) {
+        return redirect('/login')->withErrors(['email' => 'Debes iniciar sesión primero.']);
+    }
     $carrito = session()->get('carrito', []);
     return view('carrito', compact('carrito'));
+});
+
+Route::post('/logout', function () {
+    session()->forget('autenticado');
+    session()->forget('carrito');
+    return redirect('/');
 });
 
 Route::resource('products', ProductController::class);
@@ -121,6 +137,22 @@ Route::get('/crear-datos', function () {
         'categoria_id' => $equipos->id
     ]);
 
+    Product::create([
+        'name' => 'Estación de trabajo',
+        'description' => 'PC de alto rendimiento para desarrollo',
+        'price' => 3500,
+        'stock' => 7,
+        'categoria_id' => $equipos->id
+    ]);
+
+    Product::create([
+        'name' => 'Servidor en la nube',
+        'description' => 'Servidor virtual para desarrollo y pruebas',
+        'price' => 1000,
+        'stock' => 20,
+        'categoria_id' => $equipos->id
+    ]);
+
 
     // Productos LICENCIAS
     Product::create([
@@ -135,6 +167,22 @@ Route::get('/crear-datos', function () {
         'name' => 'Licencia CRM',
         'description' => 'Sistema CRM para gestión de clientes',
         'price' => 2500,
+        'stock' => 50,
+        'categoria_id' => $licencias->id
+    ]);
+
+    Product::create([
+        'name' => 'Licencia de desarrollo',
+        'description' => 'Licencia para herramientas de desarrollo',
+        'price' => 1500,
+        'stock' => 100,
+        'categoria_id' => $licencias->id
+    ]);
+
+    Product::create([
+        'name' => 'Licencia de seguridad',
+        'description' => 'Licencia para software de seguridad',
+        'price' => 2000,
         'stock' => 50,
         'categoria_id' => $licencias->id
     ]);
@@ -157,6 +205,40 @@ Route::get('/crear-datos', function () {
         'categoria_id' => $componentes->id
     ]);
 
+    Product::create([
+        'name' => 'Plugin de análisis',
+        'description' => 'Plugin para análisis de datos',
+        'price' => 400,
+        'stock' => 100,
+        'categoria_id' => $componentes->id
+    ]);
+
+    Product::create([
+        'name' => 'Componente de notificaciones',
+        'description' => 'Sistema de notificaciones para aplicaciones',
+        'price' => 500,
+        'stock' => 100,
+        'categoria_id' => $componentes->id
+    ]);
+
     return "Datos creados correctamente";
 
+});
+
+Route::get('/limpiar-datos', function () {
+    Product::truncate();
+    Categoria::truncate();
+    return "Datos limpiados correctamente";
+});
+
+Route::post('/carrito/eliminar/{index}', function (int $index) {
+    $carrito = session()->get('carrito', []);
+    array_splice($carrito, $index, 1);
+    session()->put('carrito', array_values($carrito));
+    return redirect('/carrito');
+});
+
+Route::post('/carrito/vaciar', function () {
+    session()->forget('carrito');
+    return redirect('/carrito');
 });
