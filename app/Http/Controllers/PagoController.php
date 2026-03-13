@@ -24,7 +24,7 @@ class PagoController extends Controller
         ]);
         session()->forget('carrito');
 
-    return redirect('/')
+    return redirect('/carrito')
     ->with('success', 'Pago realizado correctamente');
     }
 }

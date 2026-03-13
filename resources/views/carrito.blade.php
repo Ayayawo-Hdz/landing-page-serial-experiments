@@ -195,7 +195,8 @@
             <div class="modal-action">
 
                 <button type="submit"
-                class="btn bg-cyan-600 hover:bg-cyan-500 text-white">
+                class="btn bg-cyan-600 hover:bg-cyan-500 text-white"
+                onclick="location.href='/carrito/vaciar'">
                     Pagar
                 </button>
 
