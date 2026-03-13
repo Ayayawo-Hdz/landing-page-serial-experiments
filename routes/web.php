@@ -50,9 +50,18 @@ Route::get('/tienda', function () {
 Route::post('/login', function (Request $request) {
 
     // Cuenta hardcodeada para pruebas
-    $credenciales = [
+    /*$credenciales = [
         'email'    => 'admin@serial.com',
         'password' => 'serial123',
+    ];*/
+
+    // Esto es una nacada meramente de demostración :>
+    $request->email = '';
+    $request->password = '';
+
+    $credenciales = [
+        'email' => '',
+        'password' => '',
     ];
 
     if (
