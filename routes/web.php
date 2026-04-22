@@ -48,22 +48,19 @@ Route::get('/tienda', function () {
 
 Route::post('/login', function (Request $request) {
 
-    // Cuenta hardcodeada para pruebas
-    $credenciales = [
-        'email'    => 'admin@serial.com',
-        'password' => 'serial123',
-    ];
+    $credenciales = $request->validate([
+        'email' => ['required', 'email'],
+        'password' => ['required'],
+    ]);
 
-    if (
-        $request->email === $credenciales['email'] &&
-        $request->password === $credenciales['password']
-    ) {
+    if (\Illuminate\Support\Facades\Auth::attempt($credenciales)) {
+        $request->session()->regenerate();
         session(['autenticado' => true]);
-        return redirect('/');
+        return redirect()->intended('/');
     }
 
     return back()->withErrors([
-        'email' => 'Credenciales incorrectas'
+        'email' => 'Las credenciales proporcionadas no coinciden con nuestros registros.'
     ]);
 });
 
@@ -92,7 +89,10 @@ Route::get('/carrito', function(){
     return view('carrito', compact('carrito'));
 });
 
-Route::post('/logout', function () {
+Route::post('/logout', function (Request $request) {
+    \Illuminate\Support\Facades\Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
     session()->forget('autenticado');
     session()->forget('carrito');
     return redirect('/');
@@ -100,136 +100,6 @@ Route::post('/logout', function () {
 
 Route::resource('products', ProductController::class);
 Route::resource('categories', CategoriaController::class);
-
-Route::get('/crear-datos', function () {
-
-    // Crear categorías
-    $equipos = Categoria::create([
-        'name' => 'Equipos',
-        'description' => 'Equipos para desarrollo de sistemas'
-    ]);
-
-    $licencias = Categoria::create([
-        'name' => 'Licencias',
-        'description' => 'Licencias de software empresarial'
-    ]);
-
-    $componentes = Categoria::create([
-        'name' => 'Componentes',
-        'description' => 'Componentes para infraestructura de sistemas'
-    ]);
-
-
-    // Productos EQUIPOS
-    Product::create([
-        'name' => 'Servidor empresarial',
-        'description' => 'Servidor para sistemas integrativos',
-        'price' => 5000,
-        'stock' => 5,
-        'categoria_id' => $equipos->id
-    ]);
-
-    Product::create([
-        'name' => 'Laptop desarrollo',
-        'description' => 'Laptop optimizada para programación',
-        'price' => 2000,
-        'stock' => 10,
-        'categoria_id' => $equipos->id
-    ]);
-
-    Product::create([
-        'name' => 'Estación de trabajo',
-        'description' => 'PC de alto rendimiento para desarrollo',
-        'price' => 3500,
-        'stock' => 7,
-        'categoria_id' => $equipos->id
-    ]);
-
-    Product::create([
-        'name' => 'Servidor en la nube',
-        'description' => 'Servidor virtual para desarrollo y pruebas',
-        'price' => 1000,
-        'stock' => 20,
-        'categoria_id' => $equipos->id
-    ]);
-
-
-    // Productos LICENCIAS
-    Product::create([
-        'name' => 'Licencia ERP',
-        'description' => 'Sistema ERP empresarial',
-        'price' => 3000,
-        'stock' => 50,
-        'categoria_id' => $licencias->id
-    ]);
-
-    Product::create([
-        'name' => 'Licencia CRM',
-        'description' => 'Sistema CRM para gestión de clientes',
-        'price' => 2500,
-        'stock' => 50,
-        'categoria_id' => $licencias->id
-    ]);
-
-    Product::create([
-        'name' => 'Licencia de desarrollo',
-        'description' => 'Licencia para herramientas de desarrollo',
-        'price' => 1500,
-        'stock' => 100,
-        'categoria_id' => $licencias->id
-    ]);
-
-    Product::create([
-        'name' => 'Licencia de seguridad',
-        'description' => 'Licencia para software de seguridad',
-        'price' => 2000,
-        'stock' => 50,
-        'categoria_id' => $licencias->id
-    ]);
-
-
-    // Productos COMPONENTES
-    Product::create([
-        'name' => 'API Integración',
-        'description' => 'API para integración entre sistemas',
-        'price' => 800,
-        'stock' => 100,
-        'categoria_id' => $componentes->id
-    ]);
-
-    Product::create([
-        'name' => 'Módulo autenticación',
-        'description' => 'Sistema de autenticación segura',
-        'price' => 600,
-        'stock' => 100,
-        'categoria_id' => $componentes->id
-    ]);
-
-    Product::create([
-        'name' => 'Plugin de análisis',
-        'description' => 'Plugin para análisis de datos',
-        'price' => 400,
-        'stock' => 100,
-        'categoria_id' => $componentes->id
-    ]);
-
-    Product::create([
-        'name' => 'Componente de notificaciones',
-        'description' => 'Sistema de notificaciones para aplicaciones',
-        'price' => 500,
-        'stock' => 100,
-        'categoria_id' => $componentes->id
-    ]);
-
-    return "Datos creados correctamente";
-
-});
-
-Route::get('/limpiar-datos', function () {
-    Product::truncate();
-    Categoria::truncate();
-    return "Datos limpiados correctamente";
-});
 
 Route::post('/carrito/eliminar/{index}', function (int $index) {
     $carrito = session()->get('carrito', []);
