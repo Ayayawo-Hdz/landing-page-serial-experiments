@@ -8,6 +8,7 @@ use App\Models\Categoria;
 use App\Models\Product;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\PagoController;
 
 require __DIR__.'/settings.php';
 
@@ -48,10 +49,20 @@ Route::get('/tienda', function () {
 
 Route::post('/login', function (Request $request) {
 
-    $credenciales = $request->validate([
-        'email' => ['required', 'email'],
-        'password' => ['required'],
-    ]);
+    // Cuenta hardcodeada para pruebas
+    /*$credenciales = [
+        'email'    => 'admin@serial.com',
+        'password' => 'serial123',
+    ];*/
+
+    // Esto es una nacada meramente de demostración :>
+    $request->email = '';
+    $request->password = '';
+
+    $credenciales = [
+        'email' => '',
+        'password' => '',
+    ];
 
     if (\Illuminate\Support\Facades\Auth::attempt($credenciales)) {
         $request->session()->regenerate();
@@ -112,3 +123,5 @@ Route::post('/carrito/vaciar', function () {
     session()->forget('carrito');
     return redirect('/carrito');
 });
+
+Route::post('/pago', [PagoController::class, 'procesar']);

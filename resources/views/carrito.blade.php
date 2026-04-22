@@ -95,8 +95,10 @@
                             </span>
                         </div>
 
-                        <x-button class="w-full my-5 flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white font-semibold py-2.5 rounded-xl transition-all duration-200">
-                            Proceder al pago
+                       <x-button 
+                            onclick="document.getElementById('modalPago').showModal()"
+                            class="w-full my-5 flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white font-semibold py-2.5 rounded-xl transition-all duration-200">
+                                Proceder al pago
                         </x-button>
 
                         <a href="/tienda" class="block text-center text-sm text-gray-500 hover:text-cyan-400  text-sm transition-colors">
@@ -123,5 +125,146 @@
         @endif
 
     </div>
+    
 
 </x-layouts.app>
+<dialog id="modalPago" class="modal">
+    <div class="modal-box bg-base-200">
+
+        <h3 class="text-xl font-bold text-cyan-500 mb-4">
+            Datos de Pago
+        </h3>
+
+        <form action="/pago" method="POST">
+            @csrf
+
+            <div class="mb-3">
+                <label class="text-sm text-gray-500">Nombre del titular</label>
+                <input type="text" name="nombre_titular"
+                class="input input-bordered w-full">
+            </div>
+
+            <div class="mb-3">
+                <label class="text-sm text-gray-500">Número de tarjeta</label>
+                    <input 
+                        type="text"
+                        name="numero_tarjeta"
+                        id="numero_tarjeta"
+                        maxlength="19"
+                        placeholder="0000-0000-0000-0000"
+                        class="input input-bordered w-full">
+            </div>
+
+            <div class="mb-3">
+                <label class="text-sm text-gray-500">Fecha de expiración</label>
+                <input type="text" name="fecha_expiracion"
+                 id="fecha_expiracion"
+                 maxlength="5"
+                placeholder="MM/AA"
+                class="input input-bordered w-full">
+            </div>
+
+            <div class="mb-3">
+                <label class="text-sm text-gray-500">CVV</label>
+
+                <div class="flex items-center gap-2">
+
+                    <input 
+                    type="password"
+                    name="cvv"
+                    id="cvv"
+                    maxlength="3"
+                    placeholder="***"
+                    class="input input-bordered w-full">
+
+                    <button 
+                    type="button"
+                    onclick="toggleCVV()"
+                    class="btn btn-ghost btn-square">
+
+                        <x-icon id="iconCVV" name="o-eye" class="w-5 h-5"/>
+
+                    </button>
+
+                </div>
+            </div>
+
+            <input type="hidden" name="total"
+            value="{{ array_sum(array_column($carrito, 'precio')) }}">
+
+            <div class="modal-action">
+
+                <button type="submit"
+                class="btn bg-cyan-600 hover:bg-cyan-500 text-white"
+                onclick="location.href='/carrito/vaciar'">
+                    Pagar
+                </button>
+
+                <button type="button"
+                onclick="document.getElementById('modalPago').close()"
+                class="btn btn-ghost">
+                    Cancelar
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+</dialog>
+<script>
+
+function toggleCVV(){
+
+    const cvv = document.getElementById('cvv');
+    const icon = document.getElementById('iconCVV');
+
+    if(cvv.type === "password"){
+
+        cvv.type = "text";
+        icon.innerHTML = '';
+
+    }else{
+
+        cvv.type = "password";
+        icon.innerHTML = '';
+
+    }
+
+}
+
+</script>
+<script>
+
+const inputTarjeta = document.getElementById('numero_tarjeta');
+
+inputTarjeta.addEventListener('input', function(e) {
+    let valor = e.target.value.replace(/\D/g, '');
+    valor = valor.substring(0, 16);
+    valor = valor.replace(/(\d{4})(?=\d)/g, '$1-');
+    e.target.value = valor;
+});
+
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const inputFecha = document.getElementById("fecha_expiracion");
+
+    if (!inputFecha) return;
+
+    inputFecha.addEventListener("input", function () {
+
+        let value = this.value.replace(/\D/g, "");
+
+        if (value.length > 4) value = value.slice(0, 4);
+
+        if (value.length >= 3) {
+            value = value.slice(0, 2) + "/" + value.slice(2);
+        }
+
+        this.value = value;
+    });
+
+});
+</script>
