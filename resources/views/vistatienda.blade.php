@@ -28,7 +28,7 @@
             $agrupados = collect($productos)->groupBy('categoria');
         @endphp
 
-        <div x-data="{ tabActiva: '{{ $categorias->first()->name }}' }">
+        <div x-data="{ tabActiva: '{{ $agrupados->keys()->first() }}' }">
 
             <div class="flex gap-2 border-b border-base-300 mb-6 justify-center">
                 @foreach($agrupados as $categoria => $items)
@@ -83,9 +83,9 @@
 
                                 <form action="/agregar-carrito" method="POST">
                                     @csrf
-                                    <input type="hidden" name="nombre" value="{{ $producto->name }}">
-                                    <input type="hidden" name="precio" value="{{ $producto->price }}">
-                                    <input type="hidden" name="categoria_nombre" value="{{ $categoria->name }}">
+                                    <input type="hidden" name="nombre" value="{{ $producto->nombre }}">
+                                    <input type="hidden" name="precio" value="{{ $producto->precio_venta }}">
+                                    <input type="hidden" name="categoria_nombre" value="{{ $categoria }}">
                                     <button type="submit"
                                         class="w-full flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white font-semibold py-2.5 rounded-xl transition-all duration-200">
                                         <x-icon name="o-shopping-cart" class="w-4 h-4" />
