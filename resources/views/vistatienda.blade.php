@@ -83,9 +83,10 @@
 
                                 <form action="/agregar-carrito" method="POST">
                                     @csrf
+                                    <input type="hidden" name="id_producto" value="{{ $producto->id_producto }}">
                                     <input type="hidden" name="nombre" value="{{ $producto->nombre }}">
                                     <input type="hidden" name="precio" value="{{ $producto->precio_venta }}">
-                                    <input type="hidden" name="categoria_nombre" value="{{ $categoria }}">
+                                    <input type="hidden" name="categoria_nombre" value="{{ $producto->categoria }}">
                                     <button type="submit"
                                         class="w-full flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white font-semibold py-2.5 rounded-xl transition-all duration-200">
                                         <x-icon name="o-shopping-cart" class="w-4 h-4" />

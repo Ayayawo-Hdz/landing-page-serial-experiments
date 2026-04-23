@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\PagoController;
+use Illuminate\Support\Facades\DB;
 
 require __DIR__.'/settings.php';
 
@@ -73,6 +74,7 @@ Route::post('/login', function (Request $request) {
 Route::post('/agregar-carrito', function(Request $request){
 
     $producto = [
+        "id_producto" => $request->id_producto,
         "categoria" => $request->categoria_nombre,
         "nombre" => $request->nombre,
         "precio" => $request->precio
