@@ -12,7 +12,7 @@
 
 
 
-<x-layouts.app title="Registro">
+<x-layouts.app title="Tienda">
 
         <div class="text-center my-8">
             <h1 class="text-4xl font-bold text-cyan-500 mb-4">
@@ -23,26 +23,31 @@
             </p>
         </div>
 
+        @php
+            // 🔥 AGRUPAR PRODUCTOS POR CATEGORÍA
+            $agrupados = collect($productos)->groupBy('categoria');
+        @endphp
+
         <div x-data="{ tabActiva: '{{ $categorias->first()->name }}' }">
 
             <div class="flex gap-2 border-b border-base-300 mb-6 justify-center">
-                @foreach($categorias as $categoria)
+                @foreach($agrupados as $categoria => $items)
                     <button
-                        @click="tabActiva = '{{ $categoria->name }}'"
-                        :class="tabActiva === '{{ $categoria->name }}'
+                        @click="tabActiva = '{{ $categoria }}'"
+                        :class="tabActiva === '{{ $categoria }}'
                             ? 'border-b-2 border-cyan-500 text-cyan-500 font-bold'
                             : 'text-gray-500 hover:text-cyan-400'"
                         class="px-4 py-2 transition-colors">
-                        {{ $categoria->name }}
+                        {{ $categoria ?? 'Sin categoría' }}
                     </button>
                 @endforeach
             </div>
 
-            @foreach($categorias as $categoria)
-                <div x-show="tabActiva === '{{ $categoria->name }}'" x-cloak>
+            @foreach($agrupados as $categoria => $items)
+                <div x-show="tabActiva === '{{ $categoria }}'" x-cloak>
                     <div class="grid grid-cols-2 gap-6">
 
-                        @foreach($categoria->products as $producto)
+                        @foreach($items as $producto)
                         <div class="relative flex flex-col rounded-2xl bg-base-200 border border-base-300 hover:border-cyan-500/50 shadow-md hover:shadow-cyan-500/10 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden">
 
                             <div class="h-1 w-full bg-gradient-to-r from-cyan-500 to-cyan-700"></div>
@@ -51,30 +56,28 @@
 
                                 <div class="flex items-center gap-4">
                                     <div class="flex-shrink-0 bg-cyan-500/10 rounded-xl p-3">
-                                        @if($categoria->name === 'Componentes')
-                                            <x-icon name="o-cpu-chip" class="w-7 h-7 text-cyan-400" />
-                                        @elseif($categoria->name === 'Licencias')
-                                            <x-icon name="o-computer-desktop" class="w-7 h-7 text-cyan-400" />
-                                        @else
-                                            <x-icon name="o-cube" class="w-7 h-7 text-cyan-400" />
-                                        @endif
+                                        <x-icon name="o-cube" class="w-7 h-7 text-cyan-400" />
                                     </div>
-                                    <div class="text-left">
-                                        <p class="font-bold text-lg leading-tight text-base-content">{{ $producto->name }}</p>
-                                        <span class="text-xs text-cyan-500 font-medium tracking-wide uppercase">{{ $categoria->name }}</span>
+                                        <div class="text-left">
+                                            <p class="font-bold text-lg leading-tight text-base-content">
+                                                {{ $producto->nombre }}
+                                            </p>
+                                            <span class="text-xs text-cyan-500 font-medium tracking-wide uppercase">
+                                                {{ $categoria ?? 'Sin categoría' }}
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
 
                                 <p class="text-sm text-gray-500 dark:text-gray-400 text-left leading-relaxed flex-1">
-                                    {{ $producto->description }}
+                                    Producto sincronizado con el almacén
                                 </p>
 
                                 <div class="border-t border-base-300"></div>
 
                                 <div class="flex items-center justify-between">
-                                    <span class="text-2xl font-extrabold text-cyan-400">${{ number_format($producto->price, 2) }}</span>
+                                    <span class="text-2xl font-extrabold text-cyan-400">${{ number_format($producto->precio_venta, 2) }}</span>
                                     <span class="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-400 font-medium">
-                                        Stock: {{ $producto->stock }}
+                                        Stock: {{ $producto->stock_actual }}
                                     </span>
                                 </div>
 

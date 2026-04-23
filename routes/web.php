@@ -41,10 +41,25 @@ Route::get('/tienda', function () {
         return redirect('/login')->withErrors(['email' => 'Debes iniciar sesión primero.']);
     }
 
-    $categorias = Categoria::with('products')->get();
+    try {
+        // 🔥 TRAER PRODUCTOS DESDE MYSQL (WINDOWS)
+        $productos = DB::select("
+            SELECT 
+                p.id_producto,
+                p.nombre,
+                p.precio_venta,
+                p.stock_actual,
+                c.nombre AS categoria
+            FROM productos p
+            LEFT JOIN categorias c ON p.id_categoria = c.id_categoria
+            ORDER BY p.nombre
+        ");
 
-    return view('vistatienda', compact('categorias'));
+    } catch (\Exception $e) {
+        return "Error de conexión: " . $e->getMessage();
+    }
 
+    return view('vistatienda', compact('productos'));
 });
 
 Route::post('/login', function (Request $request) {
