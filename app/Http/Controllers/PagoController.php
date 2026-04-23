@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
-use App\Models\Producto;
-use App\Models\MovimientoStock;
+
 
 class PagoController extends Controller
 {
@@ -25,10 +24,9 @@ class PagoController extends Controller
 
                     foreach ($carrito as $item) {
 
-                        // 🔍 buscar producto
+                        // buscar producto solo para obtener ID
                         $producto = DB::table('productos')
                             ->where('nombre', $item['nombre'])
-                            ->lockForUpdate()
                             ->first();
 
                         if (!$producto) {
@@ -36,33 +34,21 @@ class PagoController extends Controller
                         }
 
                         $cantidad = 1;
+                        $idPedido = time(); // o ID real de Order
 
-                        $stockAnterior = $producto->stock_actual;
-                        $stockNuevo = $stockAnterior - $cantidad;
-
-                        if ($stockNuevo < 0) {
-                            throw new \Exception("Stock insuficiente para ".$producto->nombre);
-                        }
-
-                        // 📉 actualizar stock
-                        DB::table('productos')
-                            ->where('id_producto', $producto->id_producto)
-                            ->update([
-                                'stock_actual' => $stockNuevo
-                            ]);
-
-                        // 📦 registrar movimiento
-                        DB::table('movimientos_stock')->insert([
-                            'id_producto' => $producto->id_producto,
-                            'tipo_movimiento' => 'SALIDA',
-                            'cantidad' => $cantidad,
-                            'stock_anterior' => $stockAnterior,
-                            'stock_nuevo' => $stockNuevo,
-                            'referencia' => 'ECOMMERCE-'.time(),
-                            'origen' => 'ECOMMERCE',
-                            'usuario' => $request->nombre_titular,
-                            'fecha' => now()
+                        // 🔥 LLAMAR STORED PROCEDURE
+                        DB::statement("CALL sp_actualizar_stock_venta(?, ?, ?, @resultado)", [
+                            $producto->id_producto,
+                            $cantidad,
+                            $idPedido
                         ]);
+
+                        // 🔍 leer resultado
+                        $resultado = DB::select("SELECT @resultado as resultado")[0]->resultado;
+
+                        if ($resultado === 'STOCK_INSUFICIENTE') {
+                            throw new \Exception("Stock insuficiente para ".$item['nombre']);
+                        }
                     }
                 });
 
