@@ -20,7 +20,7 @@ class PagoController extends Controller
                 $carrito = session()->get('carrito', []);
                 $total = array_sum(array_column($carrito, 'precio'));
 
-                DB::transaction(function () use ($carrito, $request) {
+               
 
                     foreach ($carrito as $item) {
 
@@ -50,7 +50,7 @@ class PagoController extends Controller
                             throw new \Exception("Stock insuficiente para ".$item['nombre']);
                         }
                     }
-                });
+                
 
                 // 💳 guardar orden
                 Order::create([
