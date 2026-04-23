@@ -48,31 +48,11 @@ Route::get('/tienda', function () {
 });
 
 Route::post('/login', function (Request $request) {
+// 👉 Simulación de login (sin BD)
+    session(['autenticado' => true]);
 
-    // Cuenta hardcodeada para pruebas
-    /*$credenciales = [
-        'email'    => 'admin@serial.com',
-        'password' => 'serial123',
-    ];*/
-
-    // Esto es una nacada meramente de demostración :>
-    $request->email = '';
-    $request->password = '';
-
-    $credenciales = [
-        'email' => '',
-        'password' => '',
-    ];
-
-    if (\Illuminate\Support\Facades\Auth::attempt($credenciales)) {
-        $request->session()->regenerate();
-        session(['autenticado' => true]);
-        return redirect()->intended('/');
-    }
-
-    return back()->withErrors([
-        'email' => 'Las credenciales proporcionadas no coinciden con nuestros registros.'
-    ]);
+    return redirect('/tienda');
+   
 });
 
 Route::post('/agregar-carrito', function(Request $request){
